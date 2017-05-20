@@ -1,13 +1,41 @@
+buildscript {
+    repositories {
+        maven {
+            url "$artifactoryContextUrl/simplivity-build-dependencies"
+        }
+    }
+    dependencies {
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.+"
+    }
+}
+
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
+apply from: 'artifactory.gradle'
 
 group = 'nl.eveoh'
 version = '1.6'
 
 repositories {
     maven {
-        url "https://maven.eveoh.nl/content/groups/public"
+        url "$artifactoryContextUrl/simplivity-build-dependencies"
     }
+}
+
+// Need to keep things 1.7 compatible for now...
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+compileJava {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+    options.encoding = 'UTF-8'
+}
+
+compileGroovy {
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+    options.encoding = 'UTF-8'
 }
 
 dependencies {
@@ -21,16 +49,4 @@ publishing {
             from components.java
         }
     }
-    repositories {
-        maven {
-            url "https://maven.eveoh.nl/content/repositories/releases"
-            if (project.hasProperty('mavenUser')) {
-                credentials {
-                    username mavenUser
-                    password mavenPass
-                }
-            }
-        }
-    }
 }
-
