@@ -11,6 +11,8 @@ buildscript {
 
 apply plugin: 'groovy'
 apply plugin: 'maven-publish'
+apply plugin: 'project-reports'
+apply plugin: 'build-dashboard'
 apply from: 'artifactory.gradle'
 
 group = 'nl.eveoh'
