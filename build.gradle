@@ -50,3 +50,17 @@ publishing {
         }
     }
 }
+
+task writeSvtVersion {
+    description 'Write svt-version.properties with this module version tag'
+
+    doLast {
+        file('svt-version.properties').text = "VERSION_TAG=$project.version\n"
+    }
+}
+
+task deleteSvtVersion {
+    description 'Delete svt-version.properties'
+    clean.dependsOn it
+    delete 'svt-version.properties'
+}
