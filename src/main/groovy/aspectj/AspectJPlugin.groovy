@@ -20,15 +20,19 @@ class AspectJPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.plugins.apply(JavaPlugin)
 
-        if (!project.hasProperty('aspectjVersion')) {
-            throw new GradleException("You must set the property 'aspectjVersion' before applying the aspectj plugin")
-        }
+        def aspectj = project.extensions.create('aspectj', AspectJExtension, project)
 
         if (project.configurations.findByName('ajtools') == null) {
             project.configurations.create('ajtools')
-            project.dependencies {
-                ajtools "org.aspectj:aspectjtools:${project.aspectjVersion}"
-                compile "org.aspectj:aspectjrt:${project.aspectjVersion}"
+            project.afterEvaluate { p ->
+                if (aspectj.version == null) {
+                    throw new GradleException("No aspectj version supplied")
+                }
+
+                p.dependencies {
+                    ajtools "org.aspectj:aspectjtools:${aspectj.version}"
+                    compile "org.aspectj:aspectjrt:${aspectj.version}"
+                }
             }
         }
 
@@ -47,7 +51,7 @@ class AspectJPlugin implements Plugin<Project> {
                 project.tasks.create(name: aspectTaskName, overwrite: true, description: "Compiles AspectJ Source for ${projectSourceSet.name} source set", type: Ajc) {
                     sourceSet = projectSourceSet
                     inputs.files(sourceSet.allJava)
-                    outputs.dir(sourceSet.output.classesDir)
+                    outputs.dir(sourceSet.java.outputDir)
                     aspectpath = project.configurations.findByName(namingConventions.getAspectPathConfigurationName(projectSourceSet))
                     ajInpath = project.configurations.findByName(namingConventions.getAspectInpathConfigurationName(projectSourceSet))
                 }
@@ -134,8 +138,8 @@ class Ajc extends DefaultTask {
         logger.info("srcDirs $sourceSet.java.srcDirs")
 
         def iajcArgs = [classpath           : sourceSet.compileClasspath.asPath,
-                        destDir             : sourceSet.output.classesDir.absolutePath,
-                        s                   : sourceSet.output.classesDir.absolutePath,
+                        destDir             : sourceSet.java.outputDir.absolutePath,
+                        s                   : sourceSet.java.outputDir.absolutePath,
                         source              : project.convention.plugins.java.sourceCompatibility,
                         target              : project.convention.plugins.java.targetCompatibility,
                         inpath              : ajInpath.asPath,
@@ -164,5 +168,14 @@ class Ajc extends DefaultTask {
                 }
             }
         }
+    }
+}
+
+class AspectJExtension {
+
+    String version
+
+    AspectJExtension(Project project) {
+        this.version = project.findProperty('aspectjVersion') ?: '1.8.12'
     }
 }

@@ -16,7 +16,7 @@ apply plugin: 'build-dashboard'
 apply from: 'artifactory.gradle'
 
 group = 'nl.eveoh'
-version = '1.6'
+version = '2.1'
 
 repositories {
     maven {
